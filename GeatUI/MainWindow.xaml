@@ -5,8 +5,51 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GeatUI"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
-    <Grid>
-        
-    </Grid>
+        Title="MainWindow"
+        Width="640" Height="480">
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="ファイル(_F)" />
+            <MenuItem Header="編集(_E)" />
+        </Menu>
+        <ToolBarTray DockPanel.Dock="Top">
+            <ToolBar>
+                <Button>
+                    <Rectangle Width="15" Height="15" Fill="Red" />
+                </Button>
+            </ToolBar>
+        </ToolBarTray>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="2*" />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+
+            <GridSplitter Grid.Column="1"
+                          HorizontalAlignment="Left" VerticalAlignment="Stretch" Width="5" />
+            <GridSplitter Grid.Column="2"
+                          HorizontalAlignment="Left" VerticalAlignment="Stretch" Width="5" />
+
+            <TreeView Grid.Column="0">
+                <TreeViewItem Header="シーン1">
+                    <TreeViewItem Header="ボタン1" />
+                </TreeViewItem>
+                <TreeViewItem Header="シーン2" />
+            </TreeView>
+
+            <TabControl Grid.Column="1" Margin="5,0,0,0">
+                <TabItem Header="シーン1">
+                    <TextBlock Text="シーン1" />
+                </TabItem>
+                <TabItem Header="シーン2">
+                    <TextBlock Text="シーン2" />
+                </TabItem>
+            </TabControl>
+
+            <StackPanel Grid.Column="2" Margin="5,0,0,0">
+                <TextBlock Text="プロパティ" />
+            </StackPanel>
+        </Grid>
+    </DockPanel>
 </Window>
