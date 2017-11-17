@@ -1,12 +1,31 @@
-﻿<Window x:Class="GeatUI.MainWindow"
+﻿<Window
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions"
         xmlns:local="clr-namespace:GeatUI"
         mc:Ignorable="d"
+        x:Class="GeatUI.MainWindow"
         Title="MainWindow"
         Width="640" Height="480">
+    <Window.Resources>
+        <DrawingBrush x:Key="gridBrush" Viewport="{Binding GridSize}"
+                      ViewportUnits="Absolute" TileMode="Tile">
+            <DrawingBrush.Drawing>
+                <GeometryDrawing Geometry="{Binding GridGeometry}">
+                    <GeometryDrawing.Pen>
+                        <Pen Brush="LightBlue" Thickness="1" />
+                    </GeometryDrawing.Pen>
+                </GeometryDrawing>
+            </DrawingBrush.Drawing>
+        </DrawingBrush>
+    </Window.Resources>
+    <Window.DataContext>
+        <local:MainWindowViewModel />
+    </Window.DataContext>
+    
     <DockPanel>
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="ファイル(_F)" />
@@ -14,7 +33,7 @@
         </Menu>
         <ToolBarTray DockPanel.Dock="Top">
             <ToolBar>
-                <Button>
+                <Button Command="{Binding SetRectAdditionModeCommand}">
                     <Rectangle Width="15" Height="15" Fill="Red" />
                 </Button>
             </ToolBar>
@@ -40,7 +59,30 @@
 
             <TabControl Grid.Column="1" Margin="5,0,0,0">
                 <TabItem Header="シーン1">
-                    <TextBlock Text="シーン1" />
+                    <ItemsControl ItemsSource="{Binding ElementCollection}">
+                        <i:Interaction.Behaviors>
+                            <local:SpecifyRangeBehavior IsRectAdditionMode="{Binding IsRectAdditionMode, Mode=TwoWay}"
+                                                        AddRectHandler="{Binding AddElementEvent}"
+                                                        GridSize="{Binding GridSize}" />
+                        </i:Interaction.Behaviors>
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <Canvas Background="{StaticResource gridBrush}" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Rectangle Width="{Binding Width}" Height="{Binding Height}"
+                                           Fill="{Binding Fill}" Stroke="{Binding Stroke}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                        <ItemsControl.ItemContainerStyle>
+                            <Style>
+                                <Setter Property="Canvas.Left" Value="{Binding X}" />
+                                <Setter Property="Canvas.Top" Value="{Binding Y}" />
+                            </Style>
+                        </ItemsControl.ItemContainerStyle>
+                    </ItemsControl>
                 </TabItem>
                 <TabItem Header="シーン2">
                     <TextBlock Text="シーン2" />
