@@ -26,56 +26,51 @@ namespace GeatUI
     class MainWindowViewModel : BindableBase
     {
         /// <summary>
+        /// ElementCollectionをViewに公開するためのプロパティ
+        /// </summary>
+        public ObservableCollection<PlaceableElement> ElementCollection
+        {
+            get { return this.appContext.UIData.ElementCollection; }
+        }
+
+        /// <summary>
         /// 長方形追加モードに変更するコマンド
         /// </summary>
         public DelegateCommand SetRectAdditionModeCommand { get; private set; }
 
         /// <summary>
-        /// 作業領域上にある要素のコレクション
+        /// 指定した長方形を削除するコマンド
         /// </summary>
-        public ObservableCollection<PlaceableElement> ElementCollection { get; private set; }
+        public DelegateCommand RemoveRectCommand { get; private set; }
+
+        /// <summary>
+        /// 指定した長方形を選択状態にするコマンド
+        /// </summary>
+        public DelegateCommand<PlaceableElement> SelectRectCommand { get; private set; }
+
+        /// <summary>
+        /// すべての長方形の選択を解除するコマンド
+        /// </summary>
+        public DelegateCommand DeselectAllRectCommand { get; private set; }
+
+        /// <summary>
+        /// 要素追加を行うイベントのハンドラ
+        /// </summary>
+        public AddElementEventHandler AddElementEvent { get; private set; }
+
+        /// <summary>
+        /// 作業領域のグリッドの単位サイズ
+        /// </summary>
+        public int GridSize { get; set; }
 
         private bool isRectAdditionMode;
         /// <summary>
         /// 長方形追加モードになっているかのフラグ
         /// </summary>
-        public bool IsRectAdditionMode {
+        public bool IsRectAdditionMode
+        {
             get { return this.isRectAdditionMode; }
             set { this.SetProperty(ref this.isRectAdditionMode, value); }
-        }
-
-        private AddElementEventHandler addElementEvent;
-        /// <summary>
-        /// 要素追加を行うイベントのハンドラ
-        /// </summary>
-        public AddElementEventHandler AddElementEvent
-        {
-            get { return this.addElementEvent; }
-            set { this.SetProperty(ref this.addElementEvent, value); }
-        }
-
-        private Rect gridSize;
-        /// <summary>
-        /// 作業領域のグリッドの単位サイズ
-        /// </summary>
-        public Rect GridSize
-        {
-            get { return gridSize; }
-            private set { this.SetProperty(ref this.gridSize, value); }
-        }
-
-        public PathGeometry GridGeometry
-        {
-            get
-            {
-                PathFigure pf = new PathFigure();
-                pf.StartPoint = new Point(0, 0);
-                pf.Segments.Add(new LineSegment(new Point(0, gridSize.Height), true));
-                pf.Segments.Add(new LineSegment(new Point(gridSize.Width, gridSize.Height), true));
-                PathGeometry pg = new PathGeometry();
-                pg.Figures.Add(pf);
-                return pg;
-            }
         }
 
         /// <summary>
@@ -84,31 +79,47 @@ namespace GeatUI
         public MainWindowViewModel()
         {
             this.SetRectAdditionModeCommand = new DelegateCommand(
-                this.SetRectAdditionMode, () => true);
-            this.ElementCollection = new ObservableCollection<PlaceableElement>();
+                SetRectAdditionMode, () => true);
+            this.RemoveRectCommand = new DelegateCommand(
+                appContext.UIData.RemoveRect, () => ElementCollection.Any(e => e.IsSelected));
+            this.SelectRectCommand = new DelegateCommand<PlaceableElement>(
+                SelectRect, (obj) => true);
+            this.DeselectAllRectCommand = new DelegateCommand(
+                DeselectAllRect, () => true);
+            this.AddElementEvent = new AddElementEventHandler(appContext.UIData.AddRect);
+            this.GridSize = 10;
             this.IsRectAdditionMode = false;
-            this.AddElementEvent = new AddElementEventHandler(AddRect);
-            this.GridSize = new Rect { X = 0, Y = 0, Width = 10, Height = 10 };
         }
 
+        /// <summary>
+        /// アプリケーションのモデル
+        /// </summary>
+        private AppContext appContext = new AppContext();
+
+        /// <summary>
+        /// 長方形追加モードの切り替え
+        /// </summary>
         private void SetRectAdditionMode()
         {
             this.IsRectAdditionMode = !this.IsRectAdditionMode;
         }
 
-        private void AddRect(Rect rect)
+        /// <summary>
+        /// RaiseCanExecuteChangedを呼び出すためのSelectRectのラッパー
+        /// </summary>
+        private void SelectRect(PlaceableElement rect)
         {
-            var element = new PlaceableElement
-            {
-                X = (int)rect.X,
-                Y = (int)rect.Y,
-                Width = (int)rect.Width,
-                Height = (int)rect.Height,
-                Fill = Brushes.Red,
-                Stroke = Brushes.Black
-            };
+            appContext.UIData.SelectRect(rect);
+            RemoveRectCommand.RaiseCanExecuteChanged();
+        }
 
-            ElementCollection.Add(element);
+        /// <summary>
+        /// RaiseCanExecuteChangedを呼び出すためのDeselectAllRectのラッパー
+        /// </summary>
+        private void DeselectAllRect()
+        {
+            appContext.UIData.DeselectAllRect();
+            RemoveRectCommand.RaiseCanExecuteChanged();
         }
     }
 }

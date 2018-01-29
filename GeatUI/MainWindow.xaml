@@ -11,10 +11,12 @@
         Title="MainWindow"
         Width="640" Height="480">
     <Window.Resources>
-        <DrawingBrush x:Key="gridBrush" Viewport="{Binding GridSize}"
+        <local:GridSizeToGeometryConverter x:Key="GridSizeToGeometryConverter" />
+        <local:GridSizeToViewportConverter x:Key="GridSizeToViewportConverter" />
+        <DrawingBrush x:Key="gridBrush" Viewport="{Binding GridSize, Converter={StaticResource GridSizeToViewportConverter}}"
                       ViewportUnits="Absolute" TileMode="Tile">
             <DrawingBrush.Drawing>
-                <GeometryDrawing Geometry="{Binding GridGeometry}">
+                <GeometryDrawing Geometry="{Binding GridSize, Converter={StaticResource GridSizeToGeometryConverter}}">
                     <GeometryDrawing.Pen>
                         <Pen Brush="LightBlue" Thickness="1" />
                     </GeometryDrawing.Pen>
@@ -29,7 +31,9 @@
     <DockPanel>
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="ファイル(_F)" />
-            <MenuItem Header="編集(_E)" />
+            <MenuItem Header="編集(_E)">
+                <MenuItem Header="切り取り(_X)" Command="{Binding RemoveRectCommand}" />
+            </MenuItem>
         </Menu>
         <ToolBarTray DockPanel.Dock="Top">
             <ToolBar>
@@ -65,6 +69,11 @@
                                                         AddRectHandler="{Binding AddElementEvent}"
                                                         GridSize="{Binding GridSize}" />
                         </i:Interaction.Behaviors>
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+                                <i:InvokeCommandAction Command="{Binding DeselectAllRectCommand}" />
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <Canvas Background="{StaticResource gridBrush}" />
@@ -73,7 +82,54 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Rectangle Width="{Binding Width}" Height="{Binding Height}"
-                                           Fill="{Binding Fill}" Stroke="{Binding Stroke}" />
+                                           Fill="{Binding Fill}" Stroke="{Binding Stroke}"
+                                           StrokeDashOffset="0.0"
+                                           Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=ItemsControl}}">
+                                    <i:Interaction.Triggers>
+                                        <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+                                            <i:InvokeCommandAction Command="{Binding DataContext.SelectRectCommand,
+                                                                                     RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                   CommandParameter="{Binding}" />
+                                        </i:EventTrigger>
+                                        <i:EventTrigger EventName="PreviewMouseRightButtonDown">
+                                            <i:InvokeCommandAction Command="{Binding DataContext.SelectRectCommand,
+                                                                                     RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                   CommandParameter="{Binding}" />
+                                        </i:EventTrigger>
+                                    </i:Interaction.Triggers>
+                                    <Rectangle.ContextMenu>
+                                        <ContextMenu>
+                                            <MenuItem Header="切り取り(_X)"
+                                                      Command="{Binding PlacementTarget.Tag.RemoveRectCommand,
+                                                                        RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                                        </ContextMenu>
+                                    </Rectangle.ContextMenu>
+                                    <Rectangle.Style>
+                                        <Style TargetType="{x:Type Rectangle}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsSelected}" Value="true">
+                                                    <DataTrigger.Setters>
+                                                        <Setter Property="StrokeDashArray" Value="1,2" />
+                                                        <Setter Property="StrokeDashCap" Value="Square" />
+                                                        <Setter Property="StrokeThickness" Value="2" />
+                                                    </DataTrigger.Setters>
+                                                    <DataTrigger.EnterActions>
+                                                        <BeginStoryboard Name="selectedAnimation">
+                                                            <Storyboard>
+                                                                <DoubleAnimation 
+                                                                    Storyboard.TargetProperty="(StrokeDashOffset)"
+                                                                    By="10" Duration="0:0:1" RepeatBehavior="Forever" />
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </DataTrigger.EnterActions>
+                                                    <DataTrigger.ExitActions>
+                                                        <StopStoryboard BeginStoryboardName="selectedAnimation" />
+                                                    </DataTrigger.ExitActions>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Rectangle.Style>
+                                </Rectangle>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                         <ItemsControl.ItemContainerStyle>

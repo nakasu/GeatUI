@@ -60,6 +60,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="AppContext.cs" />
+    <Compile Include="EditableUIData.cs" />
+    <Compile Include="GridSizeToGeometryConverter.cs" />
+    <Compile Include="GridSizeToViewportConverter.cs" />
     <Compile Include="SpecifyRangeBehavior.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

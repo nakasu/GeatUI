@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Media;
 
 namespace GeatUI
@@ -68,6 +69,30 @@ namespace GeatUI
         {
             get { return this.stroke; }
             set { this.SetProperty(ref this.stroke, value); }
+        }
+
+        private bool isSelected;
+        /// <summary>
+        /// 選択中であるかのフラグ
+        /// </summary>
+        public bool IsSelected
+        {
+            get { return this.isSelected; }
+            set { this.SetProperty(ref this.isSelected, value); }
+        }
+
+        /// <summary>
+        /// コンストラクタ
+        /// </summary>
+        public PlaceableElement()
+        {
+            this.X = 0;
+            this.Y = 0;
+            this.Width = 0;
+            this.Height = 0;
+            this.Fill = null;
+            this.Stroke = null;
+            this.IsSelected = false;
         }
     }
 }
